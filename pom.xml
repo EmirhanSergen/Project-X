@@ -11,6 +11,7 @@
     <groupId>com.projectx</groupId>
     <artifactId>smart_task_manager</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>Project-X</name>
     <description>Project-X</description>
     <url/>
