@@ -3,6 +3,7 @@ package com.projectx.common.dto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
+// Where does should be user repository  and user service ? 
 // We handle basic CRUD operations with JpaRepository
 public interface UserRepository extends JpaRepository<User, Long> {
 

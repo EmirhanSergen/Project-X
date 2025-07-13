@@ -2,6 +2,7 @@ package com.projectx.root.controller;
 
 import com.projectx.common.dto.User;
 import com.projectx.common.dto.UserService;
+import com.projectx.common.dto.LoginRequest;
 import com.projectx.common.exception.InvalidInputException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,18 @@ public class AuthController {
         }
         User savedUser = userService.registerUser(user);
         return ResponseEntity.ok(savedUser);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+        // Input validation
+        if (loginRequest.getUsername() == null || loginRequest.getUsername().trim().isEmpty()) {
+            throw new InvalidInputException("Username cannot be empty");
+        }
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
+            throw new InvalidInputException("Password cannot be empty");
+        }
+        User user = userService.login(loginRequest);
+        return ResponseEntity.ok(user);
     }
 } 
