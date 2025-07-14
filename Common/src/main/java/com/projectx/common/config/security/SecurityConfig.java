@@ -29,9 +29,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Disable CSRF protection because we are using JWT 
             // Used to specify which endpoints are public and which are protected
             .authorizeHttpRequests(authz -> authz
-                .antMatchers("/auth/**").permitAll() // Allow all requests to /auth/**
-                .antMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
-                .antMatchers("/member/**").hasRole("MEMBER") // Member endpoints require MEMBER role
+                .requestMatchers("/auth/**").permitAll() // Allow all requests to /auth/**
+                .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
+                .requestMatchers("/member/**").hasRole("MEMBER") // Member endpoints require MEMBER role
                 .anyRequest().authenticated() // For all other requests, require authentication
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless session management

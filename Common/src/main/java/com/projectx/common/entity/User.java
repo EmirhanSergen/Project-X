@@ -5,24 +5,33 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@Data // Lombok getters, setters, toString, equals, and hashCode
-@NoArgsConstructor // Lombok no-argument constructor
-@AllArgsConstructor // Lombok all-argument constructor
+@Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // We can prefer UUID too how to choose ? 
+    @Column(name = "id")
+    private Long id;
 
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
+    
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @ElementCollection(fetch = FetchType.EAGER) // Creates a separate table and match with main entity
-                                               // Eager fetch all time but lazy fetch when needed
-    @Enumerated(EnumType.STRING) // Specify how to store enum values in database
-    private Set<Role> roles; // Should we use Set or List and should we use role or roles ? 
-
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+        name = "user_roles", 
+        joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
+    )
+    @Column(name = "role")
+    private Set<Role> roles;
 }
