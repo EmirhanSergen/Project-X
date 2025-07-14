@@ -7,12 +7,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize annotations
 public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
@@ -28,6 +30,8 @@ public class SecurityConfig {
             // Used to specify which endpoints are public and which are protected
             .authorizeHttpRequests(authz -> authz
                 .antMatchers("/auth/**").permitAll() // Allow all requests to /auth/**
+                .antMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
+                .antMatchers("/member/**").hasRole("MEMBER") // Member endpoints require MEMBER role
                 .anyRequest().authenticated() // For all other requests, require authentication
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless session management

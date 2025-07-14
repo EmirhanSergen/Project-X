@@ -1,12 +1,13 @@
 package com.projectx.common.config.security;
 
 import com.projectx.common.utils.AuthUtil;
-import com.projectx.common.service.UserService;
+import com.projectx.common.service.CustomUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -26,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private AuthUtil authUtil;
 
     @Autowired
-    private UserService userService;
+    private CustomUserDetailsService userDetailsService;
 
     @Override
     // doFilterInternal is used to filter requests and execute for every request
@@ -49,22 +50,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             logger.debug("Authenticating user: {}", username);
-            // Find user by username
-            var userOpt = userService.getUserRepository().findByUsername(username);
-            // Check if user is present (control is optional has user object) and token is not expired 
-            if (userOpt.isPresent() && !authUtil.isTokenExpired(jwt)) {
-                logger.debug("User authenticated successfully: {}", username);
-                // Create authentication token with username and null password and null authorities 
-                // We don't need password and authorities because we are using JWT 
-                // we can add roles to there but should we ? 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(username, null, null);
-                // Set details to authentication token to get more information about the request
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // Set authentication token to security context holder to use it in other parts of the application
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                logger.warn("Authentication failed for user: {} - User not found or token expired", username);
+            
+            try {
+                // Load user details using UserDetailsService
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                
+                // Check if token is not expired
+                if (!authUtil.isTokenExpired(jwt)) {
+                    logger.debug("User authenticated successfully: {} with roles: {}", 
+                                username, userDetails.getAuthorities());
+                    
+                    // Create authentication token with user details and authorities
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    
+                    // Set details to authentication token to get more information about the request
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    // Set authentication token to security context holder
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    logger.warn("Authentication failed for user: {} - Token expired", username);
+                }
+            } catch (Exception e) {
+                logger.warn("Authentication failed for user: {} - {}", username, e.getMessage());
             }
         }
         filterChain.doFilter(request, response); // Continue filter chain

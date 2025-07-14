@@ -1,6 +1,5 @@
-package com.projectx.common.security;
+package com.projectx.common.entity;
 
-import com.projectx.common.entity.User;
 import com.projectx.common.enums.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+// We implements UserDetails interface to use in Spring Security
 public class CustomUserDetails implements UserDetails {
     private final User user;
 
@@ -16,6 +16,7 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    // 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Convert user roles to Spring Security authorities

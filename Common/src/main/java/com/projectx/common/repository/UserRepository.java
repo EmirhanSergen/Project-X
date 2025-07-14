@@ -1,5 +1,6 @@
-package com.projectx.common.dto;
+package com.projectx.common.repository;
 
+import com.projectx.common.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

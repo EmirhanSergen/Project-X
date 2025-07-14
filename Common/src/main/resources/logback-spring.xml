@@ -37,6 +37,12 @@
         <appender-ref ref="FILE"/>
     </logger>
 
+    <!-- Security Logging -->
+    <logger name="com.projectx.common.service.CustomUserDetailsService" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
     <!-- Controller Logging -->
     <logger name="com.projectx.root.controller.AuthController" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
@@ -56,6 +62,16 @@
     </logger>
 
     <logger name="com.projectx.root.RootApplication" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="com.projectx.course.CourseApplication" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="com.projectx.notification.NotificationApplication" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

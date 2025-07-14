@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import com.projectx.common.dto.LoginRequest;
 import com.projectx.common.dto.LoginResponse;
 import com.projectx.common.entity.User;
+import com.projectx.common.enums.Role;
 import com.projectx.common.repository.UserRepository;
 import com.projectx.common.exception.InvalidInputException;
 import java.util.Optional;
+import java.util.Set;
 import com.projectx.common.utils.AuthUtil;
 
 
@@ -27,10 +29,19 @@ public class UserService {
 
     public User registerUser(User user) {
         logger.info("Registering new user with username: {}", user.getUsername());
+        
+        // Set default role as MEMBER if no roles are specified
+        // Should we do it in case someone tried to register without frontend ? 
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            user.setRoles(Set.of(Role.MEMBER));
+            logger.debug("Default MEMBER role assigned to user: {}", user.getUsername());
+        }
+        
         // Hash the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
-        logger.info("User registered successfully with ID: {}", savedUser.getId());
+        logger.info("User registered successfully with ID: {} and roles: {}", 
+                   savedUser.getId(), savedUser.getRoles());
         return savedUser;
     }
 

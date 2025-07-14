@@ -1,6 +1,7 @@
-package com.projectx.common.security;
+package com.projectx.common.service;
 
 import com.projectx.common.entity.User;
+import com.projectx.common.entity.CustomUserDetails;
 import com.projectx.common.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
