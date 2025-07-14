@@ -1,5 +1,7 @@
 package com.projectx.common.config.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,12 +14,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 public class SecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        logger.info("Configuring Security Filter Chain");
+        
         http
             .csrf(csrf -> csrf.disable()) // Disable CSRF protection because we are using JWT 
             // Used to specify which endpoints are public and which are protected
@@ -29,8 +34,10 @@ public class SecurityConfig {
 
         // To add our filter before the default filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        logger.debug("JWT Authentication Filter added to security chain");
 
         // Build the filter chain and return it
+        logger.info("Security Filter Chain configuration completed");
         return http.build();
     }
 

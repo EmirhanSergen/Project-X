@@ -3,6 +3,8 @@ package com.projectx.common.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -12,14 +14,19 @@ import java.util.function.Function;
 
 @Component
 public class AuthUtil {
+    private static final Logger logger = LoggerFactory.getLogger(AuthUtil.class);
+    
     // need to move secret to application.properties for better security
     private final String SECRET_KEY = "your_secret_key_here";
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 saat
 
     // generate JWT token for a given username but isn't better to generate for user ID ? 
     public String generateToken(String username) {
+        logger.debug("Generating JWT token for username: {}", username);
         Map<String, Object> claims = new HashMap<>(); // claims is used to store additional information about the user
-        return createToken(claims, username);  // createToken method is used to create a JWT token
+        String token = createToken(claims, username);  // createToken method is used to create a JWT token
+        logger.debug("JWT token generated successfully for username: {}", username);
+        return token;
     }
 
     // With builder pattern we can create a JWT token 
@@ -40,9 +47,12 @@ public class AuthUtil {
         return claimsResolver.apply(claims);
     }
 
-    // Extract username from token
-     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        // Extract username from token
+    public String extractUsername(String token) {
+        logger.debug("Extracting username from JWT token");
+        String username = extractClaim(token, Claims::getSubject);
+        logger.debug("Username extracted from token: {}", username);
+        return username;
     }
 
     // 
@@ -52,7 +62,10 @@ public class AuthUtil {
 
     // Check if token is expired
     public Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        logger.debug("Checking if JWT token is expired");
+        Boolean isExpired = extractExpiration(token).before(new Date());
+        logger.debug("Token expired status: {}", isExpired);
+        return isExpired;
     }
 
     private Date extractExpiration(String token) {
