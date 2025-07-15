@@ -3,6 +3,8 @@ package com.projectx.common.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,8 +19,12 @@ public class AuthUtil {
     private static final Logger logger = LoggerFactory.getLogger(AuthUtil.class);
     
     // need to move secret to application.properties for better security
-    private final String SECRET_KEY = "your_secret_key_here";
+    private final String SECRET_KEY = "mySecretKey123456789012345678901234567890";
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 saat
+    
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    }
 
     // generate JWT token for a given username but isn't better to generate for user ID ? 
     public String generateToken(String username) {
@@ -36,7 +42,7 @@ public class AuthUtil {
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -57,7 +63,11 @@ public class AuthUtil {
 
     // 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     // Check if token is expired

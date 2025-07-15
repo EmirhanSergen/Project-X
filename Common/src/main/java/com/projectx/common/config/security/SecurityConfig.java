@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize annotations
@@ -21,12 +22,16 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         logger.info("Configuring Security Filter Chain");
         
         http
             .csrf(csrf -> csrf.disable()) // Disable CSRF protection because we are using JWT 
+            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Enable CORS with custom configuration
             // Used to specify which endpoints are public and which are protected
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll() // Allow all requests to /auth/**
@@ -39,6 +44,7 @@ public class SecurityConfig {
         // To add our filter before the default filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         logger.debug("JWT Authentication Filter added to security chain");
+        logger.debug("CORS Configuration Source integrated into security chain");
 
         // Build the filter chain and return it
         logger.info("Security Filter Chain configuration completed");
