@@ -2,58 +2,63 @@ package com.projectx.common.config.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize annotations
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+    
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @Autowired
-    private CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        logger.info("Configuring Security Filter Chain");
+        logger.info("Configuring Security Filter Chain for Keycloak integration");
         
         http
-            .csrf(csrf -> csrf.disable()) // Disable CSRF protection because we are using JWT 
-            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Enable CORS with custom configuration
-            // Used to specify which endpoints are public and which are protected
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/auth/**").permitAll() // Allow all requests to /auth/**
-                .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
-                .requestMatchers("/member/**").hasRole("MEMBER") // Member endpoints require MEMBER role
-                .anyRequest().authenticated() // For all other requests, require authentication
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/member/**").hasRole("MEMBER")
+                .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless session management
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                )
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .defaultSuccessUrl("/api/public", true)
+            );
 
-        // To add our filter before the default filter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        logger.debug("JWT Authentication Filter added to security chain");
-        logger.debug("CORS Configuration Source integrated into security chain");
-
-        // Build the filter chain and return it
-        logger.info("Security Filter Chain configuration completed");
+        // H2 Console için frame options'ı devre dışı bırak
+        http.headers(headers -> headers.frameOptions().disable());
+        
+        logger.info("Security Filter Chain configuration completed for Keycloak");
         return http.build();
     }
 
-    // Used when we need to authenticate the user by our own logic
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("realm_access.roles");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        
+        return jwtAuthenticationConverter;
     }
 } 

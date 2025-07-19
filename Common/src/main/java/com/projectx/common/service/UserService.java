@@ -13,7 +13,7 @@ import com.projectx.common.repository.UserRepository;
 import com.projectx.common.exception.InvalidInputException;
 import java.util.Optional;
 import java.util.Set;
-import com.projectx.common.utils.AuthUtil;
+
 
 
 // Where does should be user repository  and user service ? 
@@ -25,7 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     // Spring Securty suggest to use BCryptPasswordEncoder for password hashing
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final AuthUtil authUtil;
+
 
     public User registerUser(User user) {
         logger.info("Registering new user with username: {}", user.getUsername());
@@ -62,8 +62,7 @@ public class UserService {
             throw new InvalidInputException("Invalid password");
         }
         
-        String token = authUtil.generateToken(user.getUsername());
         logger.info("Login successful for username: {}", loginRequest.getUsername());
-        return new LoginResponse(token);
+        return new LoginResponse("Login successful - use Keycloak for authentication");
     }
 } 
