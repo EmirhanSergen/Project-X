@@ -25,12 +25,6 @@
         <appender-ref ref="FILE"/>
     </logger>
 
-    <!-- JWT Logging -->
-    <logger name="com.projectx.common.utils.AuthUtil" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </logger>
-
     <!-- User Service Logging -->
     <logger name="com.projectx.common.service.UserService" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
