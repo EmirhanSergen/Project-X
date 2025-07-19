@@ -24,7 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     // Spring Securty suggest to use BCryptPasswordEncoder for password hashing
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
 
 
     public User registerUser(User user) {
